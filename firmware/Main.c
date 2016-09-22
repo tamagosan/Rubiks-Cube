@@ -3,6 +3,7 @@
 
 #define _XTAL_FREQ 32000000
 #define Fosc 32
+#define Max_Size 32
 
 #pragma config FOSC = INTOSC
 #pragma config WDTE = OFF
@@ -24,7 +25,6 @@
 unsigned char RcvFlag;
 unsigned char RcvBuf[32], SndBuf[32], Buffer[32];
 int Index;
-#define Max_Size 32
 
 char SpiSend(char,char);
 void Beep(char);
