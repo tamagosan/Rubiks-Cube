@@ -1,3 +1,4 @@
+//PIC16F1827
 #include <xc.h>
 
 #define _XTAL_FREQ 32000000
