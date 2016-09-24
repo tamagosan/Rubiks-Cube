@@ -2,7 +2,6 @@
 #include <xc.h>
 
 #define _XTAL_FREQ 32000000
-#define Fosc 32
 #define Max_Size 32
 
 #pragma config FOSC = INTOSC
