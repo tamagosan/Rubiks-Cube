@@ -3,7 +3,7 @@
 
 #define _XTAL_FREQ 32000000
 #define _TOUCH_FIRST_TIMER_MAX 3000
-#define _TOUCH_SECOND_TIMER_MAX 30
+#define _TOUCH_SECOND_TIMER_MAX 100
 
 #pragma config FOSC = INTOSC
 #pragma config WDTE = OFF
