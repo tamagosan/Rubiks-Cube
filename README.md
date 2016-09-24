@@ -1,1 +1,1 @@
-# Rubiks-Cube
+debugがやたら大変なんだけどなんでかなー^p^
