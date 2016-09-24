@@ -32,12 +32,7 @@ unsigned char getcUSART (void);
 void Send(unsigned char txchar);
 void SendStr(unsigned char * str);
 void SendCmd(const unsigned char *cmd);
-void RcvDisp(void);
 void Process(void);
-void delay_us(unsigned int usec);
-void delay_ms(unsigned int msec);
-void TRStart(void);
-int  GetADC(int ch);
 void Rolling(char);
 void ColorPaint(void);
 
