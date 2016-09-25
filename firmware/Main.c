@@ -97,7 +97,6 @@ void main(void){
     BAUDCON=0x08;
     SPBRG=68;
 
-    __delay_ms(2000);
         //SendCmd(msg1);
         //SendCmd(msg2);
         //SendCmd(msg3);
