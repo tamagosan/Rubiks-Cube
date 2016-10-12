@@ -29,23 +29,17 @@ public class MainActivity extends AppCompatActivity {
     private byte[] RcvPacket = new byte[32];
     private byte[] SndPacket = new byte[32];
     private byte[] nowjyoutai = new byte[32];
-    private int tesuucount=0;
-    private int i,j;
     private TextView State;
     static TextView Time,Tesuu;
     private Button Soroeru,Reset;
-    private Timer barasutimer;
-    private barasuTimerTask btimerTask;
-    private Timer counttimer;
-    private countTimerTask ctimerTask;
+    private Timer barasutimer,counttimer;
     static Timer timer;
-    private Handler thandler = new Handler();
-    private Handler bhandler = new Handler();
-    private boolean start=false;
-    private boolean kotonaru=false;
-    private boolean nidomehanai=false;
-    private boolean play=false;
-    private int  clear;
+    private barasuTimerTask btimerTask;
+    private countTimerTask ctimerTask;
+    private Handler thandler = new Handler(),bhandler = new Handler();
+    private boolean start=false,kotonaru=false;
+    private boolean nidomehanai=false,play=false;
+    private int tesuucount=0,i,j,clear;
     private int[][][] color=new int[6][3][3];
 
     @Override
