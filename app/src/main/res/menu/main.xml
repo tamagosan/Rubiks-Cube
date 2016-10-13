@@ -4,4 +4,8 @@
         android:id="@+id/menu_connect"
         android:title="接続"
         />
+    <item
+        android:id="@+id/menu_ranking"
+        android:title="ランキング"
+        />
 </menu>
