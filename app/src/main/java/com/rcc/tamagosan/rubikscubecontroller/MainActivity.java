@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -13,6 +14,7 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private byte[] SndPacket = new byte[32];
     private byte[] nowjyoutai = new byte[32];
     private int tesuucount = 0;
-    private int i, j;
+    private int i, j, k;
     private TextView State;
     static TextView Time, Tesuu;
     private Button Soroeru, Reset;
@@ -54,7 +56,9 @@ public class MainActivity extends AppCompatActivity {
     private int clear;
     public static int[][][] color = new int[6][3][3];
     private static MyView Cube;
-    public static float sk = -2;
+    static long stcount;
+    public static int cc1, cc2;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,6 +67,15 @@ public class MainActivity extends AppCompatActivity {
 
         //getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        /*RankingActivity rank = new RankingActivity();
+        for (j = 0; j < 5; j++) {
+            for (k = 0; k < 4; k++) {
+                SharedPreferences pref = getSharedPreferences(String.format("rank%d_%d", k, j), MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+                SharedPreferences.Editor e = pref.edit();
+                e.putLong("tamagosan", 100000);
+                e.commit();
+            }
+        }*/
 
         State = (TextView) this.findViewById(R.id.State);
         Time = (TextView) this.findViewById(R.id.time);
@@ -70,6 +83,17 @@ public class MainActivity extends AppCompatActivity {
         Soroeru = (Button) this.findViewById(R.id.soroeru);
         Reset = (Button) this.findViewById(R.id.reset);
 
+        RankingActivity rank = new RankingActivity();
+        for (i = 0; i < 5; i++) {
+            for (j = 0; j < 4; j++) {
+                SharedPreferences pref = getSharedPreferences(String.format("rank%d_%d", j, i), MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+                if (j % 2 == 0) {
+                    rank.score[j][i] = pref.getLong("tamagosan", 60000);
+                } else {
+                    rank.score[j][i] = pref.getLong("tamagosan", 1000);
+                }
+            }
+        }
 
         BTadapter = BluetoothAdapter.getDefaultAdapter();
         BTadapter = BluetoothAdapter.getDefaultAdapter();
@@ -158,6 +182,10 @@ public class MainActivity extends AppCompatActivity {
                         barasutimer = null;
                         Time.setTextColor(Color.RED);
                         Time.setText("Ready");
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                        }
                     }
                 }
             });
@@ -184,6 +212,11 @@ public class MainActivity extends AppCompatActivity {
                                     BTclient.write(SndPacket);
                                 }
                             }, 1000, 500);
+                            SndPacket[0] = 0x53;                // S
+                            SndPacket[1] = 0x43;                // C
+                            SndPacket[2] = 0x33;                // 3
+                            SndPacket[3] = 0x45;                // E
+                            BTclient.write(SndPacket);
                             break;
                         case BluetoothClient.STATE_CONNECTING:
                             State.setTextColor(Color.BLACK);
@@ -206,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void Process() {
         int rb;
+        boolean rankin;
         Cube = (MyView) this.findViewById(R.id.view1);
         if ((RcvPacket[0] == 0x4D) && (RcvPacket[1] == 0x42)) {
             for (i = 0; i < 6; i++) {
@@ -256,7 +290,6 @@ public class MainActivity extends AppCompatActivity {
                         play = false;
                         nidomehanai = false;
                         start = false;
-                        kotonaru = false;
                         if (null != counttimer) {
                             counttimer.cancel();
                             counttimer = null;
@@ -266,8 +299,53 @@ public class MainActivity extends AppCompatActivity {
                         SndPacket[2] = 0x32;                // 2
                         SndPacket[3] = 0x45;                // E
                         BTclient.write(SndPacket);
-                    }
 
+                        RankingActivity rank = new RankingActivity();
+
+                        rankin = false;
+                        for (j = 0; j < 5; j++) {
+                            if (stcount <= rank.score[0][j]) {
+                                for (k = 3; k >= j; k--) {
+                                    rank.score[0][k + 1] = rank.score[0][k];
+                                    rank.score[1][k + 1] = rank.score[1][k];
+                                }
+                                rank.score[0][j] = stcount;
+                                rank.score[1][j] = tesuucount;
+                                rankin = true;
+                                cc1 = j;
+                                break;
+                            }
+                        }
+                        for (j = 0; j < 5; j++) {
+                            if (tesuucount <= rank.score[3][j]) {
+                                for (k = 3; k >= j; k--) {
+                                    rank.score[3][k + 1] = rank.score[3][k];
+                                    rank.score[2][k + 1] = rank.score[2][k];
+                                }
+                                rank.score[3][j] = tesuucount;
+                                rank.score[2][j] = stcount;
+                                rankin = true;
+                                cc2 = j;
+                                break;
+                            }
+                        }
+
+                        if (rankin) {
+                            for (j = 0; j < 5; j++) {
+                                for (k = 0; k < 4; k++) {
+                                    SharedPreferences pref = getSharedPreferences(String.format("rank%d_%d", k, j), MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+                                    SharedPreferences.Editor e = pref.edit();
+                                    e.putLong("tamagosan", rank.score[k][j]);
+                                    e.commit();
+                                }
+                            }
+                            rank.clearf = true;
+                            Intent intent = new Intent();
+                            intent.setClassName("com.rcc.tamagosan.rubikscubecontroller", "com.rcc.tamagosan.rubikscubecontroller.RankingActivity");
+                            startActivity(intent);
+                        }
+                    }
+                    clear = 0;
                     kotonaru = false;
                 }
 
@@ -276,13 +354,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class countTimerTask extends TimerTask {
-        int tcount = 0;
+        long tcount = 0;
 
         @Override
         public void run() {
             thandler.post(new Runnable() {
                 public void run() {
                     tcount++;
+                    stcount = tcount;
                     long mm = tcount * 10 / 1000 / 60;
                     long ss = tcount * 10 / 1000 % 60;
                     long ms = (tcount * 10 - ss * 1000 - mm * 1000 * 60) / 10;
@@ -303,6 +382,11 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.menu_connect) {
             Intent Intent = new Intent(this, DeviceListActivity.class);
             startActivityForResult(Intent, CONNECTDEVICE);
+        }
+        if (item.getItemId() == R.id.menu_ranking) {
+            Intent intent = new Intent();
+            intent.setClassName("com.rcc.tamagosan.rubikscubecontroller", "com.rcc.tamagosan.rubikscubecontroller.RankingActivity");
+            startActivity(intent);
         }
         return true;
     }
