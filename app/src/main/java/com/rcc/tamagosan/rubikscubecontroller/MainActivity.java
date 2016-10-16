@@ -36,29 +36,20 @@ public class MainActivity extends AppCompatActivity {
     private byte[] RcvPacket = new byte[32];
     private byte[] SndPacket = new byte[32];
     private byte[] nowjyoutai = new byte[32];
-    private int tesuucount = 0;
-    private int i, j, k;
     private TextView State;
     static TextView Time, Tesuu;
     private Button Soroeru, Reset;
-    private Timer barasutimer;
-    private barasuTimerTask btimerTask;
-    private Timer counttimer;
-    private countTimerTask ctimerTask;
+    private Timer barasutimer, counttimer;
     static Timer timer;
-    private Handler thandler = new Handler();
-    private Handler bhandler = new Handler();
-    private Handler phandler = new Handler();
-    private boolean start = false;
-    private boolean kotonaru = false;
-    private boolean nidomehanai = false;
-    private boolean play = false;
-    private int clear;
-    public static int[][][] color = new int[6][3][3];
+    private barasuTimerTask btimerTask;
+    private countTimerTask ctimerTask;
+    private Handler thandler = new Handler(), bhandler = new Handler(), phandler = new Handler();
     private static MyView Cube;
-    static long stcount;
+    private boolean start = false, kotonaru = false, nidomehanai = false, play = false;
+    public static int[][][] color = new int[6][3][3];
     public static int cc1, cc2;
-
+    private int tesuucount = 0, i, j, k, clear;
+    static long stcount;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
