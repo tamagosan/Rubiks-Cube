@@ -1,6 +1,5 @@
 package com.rcc.tamagosan.rubikscubecontroller;
 
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -15,35 +14,35 @@ public class RankingActivity extends AppCompatActivity {
     public static long score[][]=new long[4][5];
     public static TextView[][] rank=new TextView[4][5];
     public static boolean clearf=false;
-
     private int i,j;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ranking);
-        rank[0][0]=(TextView)findViewById(R.id.time_time_1);
-        rank[0][1]=(TextView)findViewById(R.id.time_time_2);
-        rank[0][2]=(TextView)findViewById(R.id.time_time_3);
-        rank[0][3]=(TextView)findViewById(R.id.time_time_4);
-        rank[0][4]=(TextView)findViewById(R.id.time_time_5);
+        
+        rank[0][0]=(TextView)this.findViewById(R.id.time_time_1);
+        rank[0][1]=(TextView)this.findViewById(R.id.time_time_2);
+        rank[0][2]=(TextView)this.findViewById(R.id.time_time_3);
+        rank[0][3]=(TextView)this.findViewById(R.id.time_time_4);
+        rank[0][4]=(TextView)this.findViewById(R.id.time_time_5);
 
-        rank[1][0]=(TextView)findViewById(R.id.time_tesuu_1);
-        rank[1][1]=(TextView)findViewById(R.id.time_tesuu_2);
-        rank[1][2]=(TextView)findViewById(R.id.time_tesuu_3);
-        rank[1][3]=(TextView)findViewById(R.id.time_tesuu_4);
-        rank[1][4]=(TextView)findViewById(R.id.time_tesuu_5);
+        rank[1][0]=(TextView)this.findViewById(R.id.time_tesuu_1);
+        rank[1][1]=(TextView)this.findViewById(R.id.time_tesuu_2);
+        rank[1][2]=(TextView)this.findViewById(R.id.time_tesuu_3);
+        rank[1][3]=(TextView)this.findViewById(R.id.time_tesuu_4);
+        rank[1][4]=(TextView)this.findViewById(R.id.time_tesuu_5);
 
-        rank[2][0]=(TextView)findViewById(R.id.tesuu_time_1);
-        rank[2][1]=(TextView)findViewById(R.id.tesuu_time_2);
-        rank[2][2]=(TextView)findViewById(R.id.tesuu_time_3);
-        rank[2][3]=(TextView)findViewById(R.id.tesuu_time_4);
-        rank[2][4]=(TextView)findViewById(R.id.tesuu_time_5);
+        rank[2][0]=(TextView)this.findViewById(R.id.tesuu_time_1);
+        rank[2][1]=(TextView)this.findViewById(R.id.tesuu_time_2);
+        rank[2][2]=(TextView)this.findViewById(R.id.tesuu_time_3);
+        rank[2][3]=(TextView)this.findViewById(R.id.tesuu_time_4);
+        rank[2][4]=(TextView)this.findViewById(R.id.tesuu_time_5);
 
-        rank[3][0]=(TextView)findViewById(R.id.tesuu_tesuu_1);
-        rank[3][1]=(TextView)findViewById(R.id.tesuu_tesuu_2);
-        rank[3][2]=(TextView)findViewById(R.id.tesuu_tesuu_3);
-        rank[3][3]=(TextView)findViewById(R.id.tesuu_tesuu_4);
-        rank[3][4]=(TextView)findViewById(R.id.tesuu_tesuu_5);
+        rank[3][0]=(TextView)this.findViewById(R.id.tesuu_tesuu_1);
+        rank[3][1]=(TextView)this.findViewById(R.id.tesuu_tesuu_2);
+        rank[3][2]=(TextView)this.findViewById(R.id.tesuu_tesuu_3);
+        rank[3][3]=(TextView)this.findViewById(R.id.tesuu_tesuu_4);
+        rank[3][4]=(TextView)this.findViewById(R.id.tesuu_tesuu_5);
 
         MainActivity mact = new MainActivity();
         for(i=0;i<5;i++) {
@@ -74,9 +73,8 @@ public class RankingActivity extends AppCompatActivity {
                 }
             }
         }
+        
         clearf=false;
-
-
         Button rtnbutton=(Button)this.findViewById(R.id.rtn);
         rtnbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,7 +82,5 @@ public class RankingActivity extends AppCompatActivity {
                 finish();
             }
         });
-
     }
-
 }
