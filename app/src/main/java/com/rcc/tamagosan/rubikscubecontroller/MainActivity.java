@@ -3,22 +3,16 @@ package com.rcc.tamagosan.rubikscubecontroller;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -28,7 +22,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
-
     public static final int CONNECTDEVICE = 1;
     public static final int ENABLEBLUETOOTH = 2;
     private BluetoothAdapter BTadapter;
@@ -45,34 +38,27 @@ public class MainActivity extends AppCompatActivity {
     private countTimerTask ctimerTask;
     private Handler thandler = new Handler(), bhandler = new Handler(), phandler = new Handler();
     private static MyView Cube;
-    private boolean start = false, kotonaru = false, nidomehanai = false, play = false;
+    private boolean start = false, kotonaru = false, nidomehanai = false, play = false,barasu=false;
     public static int[][][] color = new int[6][3][3];
     public static int cc1, cc2;
     private int tesuucount = 0, i, j, k, clear;
     static long stcount;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        /*RankingActivity rank = new RankingActivity();
-        for (j = 0; j < 5; j++) {
-            for (k = 0; k < 4; k++) {
-                SharedPreferences pref = getSharedPreferences(String.format("rank%d_%d", k, j), MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
-                SharedPreferences.Editor e = pref.edit();
-                e.putLong("tamagosan", 100000);
-                e.commit();
-            }
-        }*/
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         State = (TextView) this.findViewById(R.id.State);
         Time = (TextView) this.findViewById(R.id.time);
         Tesuu = (TextView) this.findViewById(R.id.tesuu);
         Soroeru = (Button) this.findViewById(R.id.soroeru);
         Reset = (Button) this.findViewById(R.id.reset);
+
+        Cube = (MyView) this.findViewById(R.id.view1);
 
         RankingActivity rank = new RankingActivity();
         for (i = 0; i < 5; i++) {
@@ -96,6 +82,17 @@ public class MainActivity extends AppCompatActivity {
         Soroeru.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (null != counttimer) {
+                    counttimer.cancel();
+                    counttimer = null;
+                }
+                if (null != barasutimer) {
+                    barasutimer.cancel();
+                    barasutimer = null;
+                }
+                try{
+                    Thread.sleep(600);
+                }catch(InterruptedException e){ }
                 SndPacket[0] = 0x53;                // S
                 SndPacket[1] = 0x43;                // C
                 SndPacket[2] = 0x33;                // 3
@@ -106,14 +103,7 @@ public class MainActivity extends AppCompatActivity {
                 start = false;
                 kotonaru = false;
                 tesuucount = 0;
-                if (null != counttimer) {
-                    counttimer.cancel();
-                    counttimer = null;
-                }
-                if (null != barasutimer) {
-                    barasutimer.cancel();
-                    barasutimer = null;
-                }
+                barasu = false;
                 Time.setTextColor(Color.BLACK);
                 Time.setText("00:00.00");
                 Tesuu.setText("0");
@@ -122,10 +112,7 @@ public class MainActivity extends AppCompatActivity {
         Reset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (null != barasutimer) {
-                    barasutimer.cancel();
-                    barasutimer = null;
-                }
+                barasu = true;
                 play = false;
                 nidomehanai = false;
                 start = false;
@@ -136,18 +123,22 @@ public class MainActivity extends AppCompatActivity {
                     counttimer = null;
                 }
                 Time.setTextColor(Color.BLACK);
-                Time.setText("00:00.00");
-                Tesuu.setText("0");
+                Time.setText("Now Shuffling");
+                if (null != timer) {
+                    timer.cancel();
+                    timer = null;
+                }
                 barasutimer = new Timer();
                 btimerTask = new barasuTimerTask();
-                barasutimer.schedule(btimerTask, 0, 500);
+                barasutimer.schedule(btimerTask, 0, 600);
+
             }
         });
 
     }
 
     class barasuTimerTask extends TimerTask {
-        int count = 0, rollrand;
+        int count = 0, rollrand,pict;
 
         @Override
         public void run() {
@@ -156,7 +147,9 @@ public class MainActivity extends AppCompatActivity {
                     SndPacket[0] = 0x53;                // S
                     SndPacket[1] = 0x43;                // C
                     SndPacket[2] = 0x31;                // 1
-                    rollrand = (int) (Math.random() * 18);
+                    do{rollrand = (int) (Math.random() * 18);}
+                    while(pict+1>=rollrand && pict-1<=rollrand);
+                    pict=rollrand;
                     if (rollrand < 10) {
                         SndPacket[3] = 48;
                         SndPacket[4] = (byte) (rollrand + 48);
@@ -167,16 +160,24 @@ public class MainActivity extends AppCompatActivity {
                     SndPacket[5] = 0x45;                // E
                     BTclient.write(SndPacket);
                     count++;
+                    Tesuu.setText(String.format("%d", 20-count));
                     if (count == 20) {
                         play = true;
                         barasutimer.cancel();
                         barasutimer = null;
                         Time.setTextColor(Color.RED);
                         Time.setText("Ready");
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                        }
+                        timer = new Timer(true);
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                SndPacket[0] = 0x53;                // S
+                                SndPacket[1] = 0x42;                // B
+                                SndPacket[2] = 0x45;                // E
+                                BTclient.write(SndPacket);
+                            }
+                        }, 1000, 500);
+                        barasu = false;
                     }
                 }
             });
@@ -193,6 +194,14 @@ public class MainActivity extends AppCompatActivity {
                         case BluetoothClient.STATE_CONNECTED:
                             State.setTextColor(Color.BLACK);
                             State.setText("接続完了");
+                            if (null != counttimer) {
+                                counttimer.cancel();
+                                counttimer = null;
+                            }
+                            if (null != barasutimer) {
+                                barasutimer.cancel();
+                                barasutimer = null;
+                            }
                             timer = new Timer(true);
                             timer.schedule(new TimerTask() {
                                 @Override
@@ -208,6 +217,15 @@ public class MainActivity extends AppCompatActivity {
                             SndPacket[2] = 0x33;                // 3
                             SndPacket[3] = 0x45;                // E
                             BTclient.write(SndPacket);
+                            play = false;
+                            nidomehanai = false;
+                            start = false;
+                            kotonaru = false;
+                            tesuucount = 0;
+                            barasu = false;
+                            Time.setTextColor(Color.BLACK);
+                            Time.setText("00:00.00");
+                            Tesuu.setText("0");
                             break;
                         case BluetoothClient.STATE_CONNECTING:
                             State.setTextColor(Color.BLACK);
@@ -222,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
                 case BluetoothClient.MESSAGE_READ:
                     State.setText("送受信処理中");
                     RcvPacket = (byte[]) msg.obj;
-                    if (null == barasutimer) Process();
+                    if(!barasu)Process();
                     break;
             }
         }
@@ -231,7 +249,6 @@ public class MainActivity extends AppCompatActivity {
     private void Process() {
         int rb;
         boolean rankin;
-        Cube = (MyView) this.findViewById(R.id.view1);
         if ((RcvPacket[0] == 0x4D) && (RcvPacket[1] == 0x42)) {
             for (i = 0; i < 6; i++) {
                 for (j = 0; j < 3; j++) {
