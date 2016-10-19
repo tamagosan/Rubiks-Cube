@@ -90,48 +90,51 @@ public class MainActivity extends AppCompatActivity {
                     barasutimer.cancel();
                     barasutimer = null;
                 }
-                try{
-                    Thread.sleep(600);
-                }catch(InterruptedException e){ }
+                if(barasu){
+                    try{
+                        Thread.sleep(650);
+                    }catch(InterruptedException e){ }
+                    barasu = false;
+                }
+                play = false;
+                nidomehanai = false;
+                start = false;
+                kotonaru = false;
+                tesuucount = 0;
+                Time.setTextColor(Color.BLACK);
+                Time.setText("00:00.00");
+                Tesuu.setText("0");
                 SndPacket[0] = 0x53;                // S
                 SndPacket[1] = 0x43;                // C
                 SndPacket[2] = 0x33;                // 3
                 SndPacket[3] = 0x45;                // E
                 BTclient.write(SndPacket);
-                play = false;
-                nidomehanai = false;
-                start = false;
-                kotonaru = false;
-                tesuucount = 0;
-                barasu = false;
-                Time.setTextColor(Color.BLACK);
-                Time.setText("00:00.00");
-                Tesuu.setText("0");
             }
         });
         Reset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                barasu = true;
-                play = false;
-                nidomehanai = false;
-                start = false;
-                kotonaru = false;
-                tesuucount = 0;
-                if (null != counttimer) {
-                    counttimer.cancel();
-                    counttimer = null;
+                if(!barasu) {
+                    barasu = true;
+                    play = false;
+                    nidomehanai = false;
+                    start = false;
+                    kotonaru = false;
+                    tesuucount = 0;
+                    if (null != counttimer) {
+                        counttimer.cancel();
+                        counttimer = null;
+                    }
+                    Time.setTextColor(Color.BLACK);
+                    Time.setText("Now Shuffling");
+                    if (null != timer) {
+                        timer.cancel();
+                        timer = null;
+                    }
+                    barasutimer = new Timer();
+                    btimerTask = new barasuTimerTask();
+                    barasutimer.schedule(btimerTask, 0, 600);
                 }
-                Time.setTextColor(Color.BLACK);
-                Time.setText("Now Shuffling");
-                if (null != timer) {
-                    timer.cancel();
-                    timer = null;
-                }
-                barasutimer = new Timer();
-                btimerTask = new barasuTimerTask();
-                barasutimer.schedule(btimerTask, 0, 600);
-
             }
         });
 
@@ -373,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
                     long mm = tcount * 10 / 1000 / 60;
                     long ss = tcount * 10 / 1000 % 60;
                     long ms = (tcount * 10 - ss * 1000 - mm * 1000 * 60) / 10;
-                    Time.setText(String.format("%1$02d:%2$02d.%3$02d", mm, ss, ms));
+                    if(play)Time.setText(String.format("%1$02d:%2$02d.%3$02d", mm, ss, ms));
                 }
             });
         }
