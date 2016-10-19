@@ -96,7 +96,7 @@ class MyView extends View {
         }
     }
 
-    public int sColor(int mh, int sx, int sy) {
+    private int sColor(int mh, int sx, int sy) {
         MainActivity act = new MainActivity();
         switch (act.color[mh][sy][sx]) {
             case 0:
