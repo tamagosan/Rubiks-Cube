@@ -110,7 +110,7 @@ class MyView extends View {
             case 4:
                 return Color.rgb(255, 255, 0);
             case 5:
-                return Color.rgb(255, 120, 0);
+                return Color.rgb(255, 150, 0);
         }
         return 0;
     }
