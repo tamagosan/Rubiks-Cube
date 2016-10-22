@@ -1,4 +1,3 @@
-//PIC16F1938
 #include <xc.h>
 
 #define _XTAL_FREQ 32000000
@@ -35,11 +34,11 @@ void Process(void);
 void Rolling(char);
 void ColorPaint(void);
 
-char color[6][3][3]={
+unsigned char color[6][3][3]={
     {{1,1,1},{1,1,1},{1,1,1}},
-    {{4,4,4},{4,4,4},{4,4,4}},
-    {{3,3,3},{3,3,3},{3,3,3}},
     {{2,2,2},{2,2,2},{2,2,2}},
+    {{3,3,3},{3,3,3},{3,3,3}},
+    {{4,4,4},{4,4,4},{4,4,4}},
     {{0,0,0},{0,0,0},{0,0,0}},
     {{5,5,5},{5,5,5},{5,5,5}},
     };
@@ -96,7 +95,6 @@ void main(void){
     RCSTA=0x90;
     BAUDCON=0x08;
     SPBRG=68;
-
         //SendCmd(msg1);
         //SendCmd(msg2);
         //SendCmd(msg3);
@@ -125,8 +123,19 @@ void main(void){
     while(1){
         for(i=0;i<6;i++){
             spiReceive=SpiSend(i*2+1,0);
-            if(spiReceive!=0){
-                Rolling(RollingArray[i][spiReceive-1]);
+            switch(spiReceive){
+                case 0x03:Rolling(RollingArray[i][0]);break;
+                case 0x0c:Rolling(RollingArray[i][1]);break;
+                case 0x0f:Rolling(RollingArray[i][2]);break;
+                case 0x33:Rolling(RollingArray[i][3]);break;
+                case 0x3c:Rolling(RollingArray[i][4]);break;
+                case 0x3f:Rolling(RollingArray[i][5]);break;
+                case 0xc3:Rolling(RollingArray[i][6]);break;
+                case 0xcc:Rolling(RollingArray[i][7]);break;
+                case 0xcf:Rolling(RollingArray[i][8]);break;
+                case 0xf3:Rolling(RollingArray[i][9]);break;
+                case 0xfc:Rolling(RollingArray[i][10]);break;
+                case 0xff:Rolling(RollingArray[i][11]);break;
             }
         }
 
@@ -186,9 +195,9 @@ void Process(void){
         case 'B':
             for(i=0;i<6;i++){
                 for(j=0;j<3;j++){
-                    SndBuf[i+j*6+2]=color[i][j][0];
-                    SndBuf[i+j*6+2]+=color[i][j][1]*6;
-                    SndBuf[i+j*6+2]+=color[i][j][2]*36;
+                    SndBuf[j+i*3+2]=color[i][j][0];
+                    SndBuf[j+i*3+2]+=color[i][j][1]*6;
+                    SndBuf[j+i*3+2]+=color[i][j][2]*36;
                 }
             }
             SendStr(SndBuf);
@@ -208,19 +217,47 @@ void Process(void){
                     Beep(0);
                     break;
                 case '3':
-                    for(i=0;i<6;i++){
-                        switch(i){
-                            case 0:reset=1;break;
-                            case 1:reset=4;break;
-                            case 2:reset=3;break;
-                            case 3:reset=2;break;
-                            case 4:reset=0;break;
-                            case 5:reset=5;break;
-                        }
-                        for(j=0;j<3;j++){
-                            for(k=0;k<3;k++){
-                                color[i][j][k]=reset;
+                    if(Buffer[3]=='0'){
+                        for(i=0;i<6;i++){
+                            switch(i){
+                                case 0:reset=1;break;
+                                case 1:reset=2;break;
+                                case 2:reset=3;break;
+                                case 3:reset=4;break;
+                                case 4:reset=0;break;
+                                case 5:reset=5;break;
                             }
+                            for(j=0;j<3;j++){
+                                for(k=0;k<3;k++){
+                                    color[i][j][k]=reset;
+                                }
+                            }
+                        }
+                    }else if(Buffer[3]=='1'){
+                        for(i=0;i<6;i++){
+                            switch(i){
+                                case 0:reset=1;break;
+                                case 1:reset=4;break;
+                                case 2:reset=3;break;
+                                case 3:reset=0;break;
+                                case 4:reset=2;break;
+                                case 5:reset=5;break;
+                            }
+                            for(j=0;j<3;j++){
+                                for(k=0;k<3;k++){
+                                    color[i][j][k]=reset;
+                                }
+                            }
+                        }
+                    }
+                    ColorPaint();
+                    break;
+                case '4':
+                    for(i=0;i<6;i++){
+                        for(j=0;j<3;j++){
+                            color[i][j][0]=Buffer[i*3+j+3]%36%6;
+                            color[i][j][1]=(int)(Buffer[i*3+j+3]/6)%6;
+                            color[i][j][2]=(int)(Buffer[i*3+j+3]/36);
                         }
                     }
                     ColorPaint();
