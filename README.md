@@ -1,2 +1,2 @@
-http://www.nicovideo.jp/watch/sm29832623
-http://tmgsn.webcrow.jp/app-release.apk
+http://www.nicovideo.jp/watch/sm29832623<br>
+http://tmgsn.webcrow.jp/rcc/app-release.apk
