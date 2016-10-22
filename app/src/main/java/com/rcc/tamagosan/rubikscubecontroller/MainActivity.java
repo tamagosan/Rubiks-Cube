@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,17 +39,22 @@ public class MainActivity extends AppCompatActivity {
     private countTimerTask ctimerTask;
     private Handler thandler = new Handler(), bhandler = new Handler(), phandler = new Handler();
     private static MyView Cube;
-    private boolean start = false, kotonaru = false, nidomehanai = false, play = false,barasu=false;
+    private boolean start = false, kotonaru = false, nidomehanai = false, play = false, barasu = false;
+    public static boolean cColorFlag = false, cAnimationFlag = false, cChange, animation;
     public static int[][][] color = new int[6][3][3];
     public static int cc1, cc2;
     private int tesuucount = 0, i, j, k, clear;
     static long stcount;
+    private Shuffle shuffle;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        WindowManager wm = getWindowManager();
+        Display disp = wm.getDefaultDisplay();
+        if (disp.getHeight() > 1800) setContentView(R.layout.activity_main_tablet);
+            else setContentView(R.layout.activity_main_phone);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -71,8 +77,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+        SharedPreferences pref = getSharedPreferences("color", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+        cChange = pref.getBoolean("tamagosan", false);
+        pref = getSharedPreferences("animation", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+        animation = pref.getBoolean("tamagosan", false);
 
-        BTadapter = BluetoothAdapter.getDefaultAdapter();
         BTadapter = BluetoothAdapter.getDefaultAdapter();
         if (BTadapter == null) {
             State.setTextColor(Color.YELLOW);
@@ -90,11 +99,22 @@ public class MainActivity extends AppCompatActivity {
                     barasutimer.cancel();
                     barasutimer = null;
                 }
-                if(barasu){
-                    try{
+                if (barasu) {
+                    try {
                         Thread.sleep(650);
-                    }catch(InterruptedException e){ }
+                    } catch (InterruptedException e) {
+                    }
                     barasu = false;
+                    timer = new Timer(true);
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            SndPacket[0] = 0x53;                // S
+                            SndPacket[1] = 0x42;                // B
+                            SndPacket[2] = 0x45;                // E
+                            BTclient.write(SndPacket);
+                        }
+                    }, 1000, 500);
                 }
                 play = false;
                 nidomehanai = false;
@@ -107,14 +127,19 @@ public class MainActivity extends AppCompatActivity {
                 SndPacket[0] = 0x53;                // S
                 SndPacket[1] = 0x43;                // C
                 SndPacket[2] = 0x33;                // 3
-                SndPacket[3] = 0x45;                // E
+                if (cChange) {
+                    SndPacket[3] = 0x31;
+                } else {
+                    SndPacket[3] = 0x30;
+                }
+                SndPacket[4] = 0x45;                // E
                 BTclient.write(SndPacket);
             }
         });
         Reset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!barasu) {
+                if (!barasu) {
                     barasu = true;
                     play = false;
                     nidomehanai = false;
@@ -125,23 +150,49 @@ public class MainActivity extends AppCompatActivity {
                         counttimer.cancel();
                         counttimer = null;
                     }
-                    Time.setTextColor(Color.BLACK);
-                    Time.setText("Now Shuffling");
-                    if (null != timer) {
-                        timer.cancel();
-                        timer = null;
+                    if (null != barasutimer) {
+                        barasutimer.cancel();
+                        barasutimer = null;
                     }
-                    barasutimer = new Timer();
-                    btimerTask = new barasuTimerTask();
-                    barasutimer.schedule(btimerTask, 0, 600);
+                    if (animation) {
+                        Time.setTextColor(Color.BLACK);
+                        Time.setText("Now Shuffling");
+                        if (null != timer) {
+                            timer.cancel();
+                            timer = null;
+                        }
+                        barasutimer = new Timer();
+                        btimerTask = new barasuTimerTask();
+                        barasutimer.schedule(btimerTask, 0, 600);
+                    } else {
+                        shuffle = new Shuffle();
+                        shuffle.rolling();
+                        SndPacket[0] = 0x53;                // S
+                        SndPacket[1] = 0x43;                // C
+                        SndPacket[2] = 0x34;                // 4
+                        for (i = 0; i < 6; i++) {
+                            for (j = 0; j < 3; j++) {
+                                SndPacket[i * 3 + j + 3] = (byte) (color[i][j][0] + color[i][j][1] * 6 + color[i][j][2] * 36);
+                            }
+                        }
+                        SndPacket[21] = 0x45;                // E
+                        BTclient.write(SndPacket);
+                        for (i = 0; i < 22; i++) {
+                            SndPacket[i] = 0;
+                        }
+                        Time.setTextColor(Color.RED);
+                        Time.setText("Ready");
+                        Tesuu.setText("0");
+                        play = true;
+                        barasu = false;
+                    }
                 }
             }
         });
-
     }
 
     class barasuTimerTask extends TimerTask {
-        int count = 0, rollrand,pict;
+        int count = 0, rollrand, pict;
 
         @Override
         public void run() {
@@ -150,9 +201,11 @@ public class MainActivity extends AppCompatActivity {
                     SndPacket[0] = 0x53;                // S
                     SndPacket[1] = 0x43;                // C
                     SndPacket[2] = 0x31;                // 1
-                    do{rollrand = (int) (Math.random() * 18);}
-                    while(pict+1>=rollrand && pict-1<=rollrand);
-                    pict=rollrand;
+                    do {
+                        rollrand = (int) (Math.random() * 18);
+                    }
+                    while (pict + 1 >= rollrand && pict - 1 <= rollrand);
+                    pict = rollrand;
                     if (rollrand < 10) {
                         SndPacket[3] = 48;
                         SndPacket[4] = (byte) (rollrand + 48);
@@ -163,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                     SndPacket[5] = 0x45;                // E
                     BTclient.write(SndPacket);
                     count++;
-                    Tesuu.setText(String.format("%d", 20-count));
+                    Tesuu.setText(String.format("%d", 20 - count));
                     if (count == 20) {
                         play = true;
                         barasutimer.cancel();
@@ -188,7 +241,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private final Handler shandler = new Handler() {
-        // ハンドルメッセージごとの処理
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -218,7 +270,12 @@ public class MainActivity extends AppCompatActivity {
                             SndPacket[0] = 0x53;                // S
                             SndPacket[1] = 0x43;                // C
                             SndPacket[2] = 0x33;                // 3
-                            SndPacket[3] = 0x45;                // E
+                            if (cChange) {
+                                SndPacket[3] = 0x31;
+                            } else {
+                                SndPacket[3] = 0x30;
+                            }
+                            SndPacket[4] = 0x45;                // E
                             BTclient.write(SndPacket);
                             play = false;
                             nidomehanai = false;
@@ -243,8 +300,62 @@ public class MainActivity extends AppCompatActivity {
                 case BluetoothClient.MESSAGE_READ:
                     State.setText("送受信処理中");
                     RcvPacket = (byte[]) msg.obj;
-                    if(!barasu)Process();
+                    if (!barasu) Process();
                     break;
+            }
+            if (cColorFlag) {
+                cColorFlag = false;
+                if (cChange) {
+                    for (i = 0; i < 6; i++) {
+                        for (j = 0; j < 3; j++) {
+                            for (k = 0; k < 3; k++) {
+                                if (color[i][j][k] == 0) {
+                                    color[i][j][k] = 2;
+                                } else if (color[i][j][k] == 2) {
+                                    color[i][j][k] = 4;
+                                } else if (color[i][j][k] == 4) {
+                                    color[i][j][k] = 0;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    for (i = 0; i < 6; i++) {
+                        for (j = 0; j < 3; j++) {
+                            for (k = 0; k < 3; k++) {
+                                if (color[i][j][k] == 0) {
+                                    color[i][j][k] = 4;
+                                } else if (color[i][j][k] == 2) {
+                                    color[i][j][k] = 0;
+                                } else if (color[i][j][k] == 4) {
+                                    color[i][j][k] = 2;
+                                }
+                            }
+                        }
+                    }
+                }
+                SndPacket[0] = 0x53;                // S
+                SndPacket[1] = 0x43;                // C
+                SndPacket[2] = 0x34;                // 4
+                for (i = 0; i < 6; i++) {
+                    for (j = 0; j < 3; j++) {
+                        SndPacket[i * 3 + j + 3] = (byte) (color[i][j][0] + color[i][j][1] * 6 + color[i][j][2] * 36);
+                    }
+                }
+                SndPacket[21] = 0x45;                // E
+                BTclient.write(SndPacket);
+
+                SharedPreferences pref = getSharedPreferences("color", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+                SharedPreferences.Editor e = pref.edit();
+                e.putBoolean("tamagosan", cChange);
+                e.commit();
+            }
+            if (cAnimationFlag) {
+                cAnimationFlag = false;
+                SharedPreferences pref = getSharedPreferences("animation", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+                SharedPreferences.Editor e = pref.edit();
+                e.putBoolean("tamagosan", animation);
+                e.commit();
             }
         }
     };
@@ -376,7 +487,7 @@ public class MainActivity extends AppCompatActivity {
                     long mm = tcount * 10 / 1000 / 60;
                     long ss = tcount * 10 / 1000 % 60;
                     long ms = (tcount * 10 - ss * 1000 - mm * 1000 * 60) / 10;
-                    if(play)Time.setText(String.format("%1$02d:%2$02d.%3$02d", mm, ss, ms));
+                    if (play) Time.setText(String.format("%1$02d:%2$02d.%3$02d", mm, ss, ms));
                 }
             });
         }
@@ -397,6 +508,11 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.menu_ranking) {
             Intent intent = new Intent();
             intent.setClassName("com.rcc.tamagosan.rubikscubecontroller", "com.rcc.tamagosan.rubikscubecontroller.RankingActivity");
+            startActivity(intent);
+        }
+        if (item.getItemId() == R.id.menu_setting) {
+            Intent intent = new Intent();
+            intent.setClassName("com.rcc.tamagosan.rubikscubecontroller", "com.rcc.tamagosan.rubikscubecontroller.SettingActivity");
             startActivity(intent);
         }
         return true;
