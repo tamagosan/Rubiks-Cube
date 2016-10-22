@@ -39,14 +39,13 @@ public class MainActivity extends AppCompatActivity {
     private countTimerTask ctimerTask;
     private Handler thandler = new Handler(), bhandler = new Handler(), phandler = new Handler();
     private static MyView Cube;
+    private Shuffle shuffle;
     private boolean start = false, kotonaru = false, nidomehanai = false, play = false, barasu = false;
     public static boolean cColorFlag = false, cAnimationFlag = false, cChange, animation;
     public static int[][][] color = new int[6][3][3];
     public static int cc1, cc2;
     private int tesuucount = 0, i, j, k, clear;
     static long stcount;
-    private Shuffle shuffle;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
