@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int ENABLEBLUETOOTH = 2;
     private BluetoothAdapter BTadapter;
     private BluetoothClient BTclient;
-    private byte[] RcvPacket = new byte[32],SndPacket = new byte[32],nowjyoutai = new byte[18];
+    private byte[] RcvPacket = new byte[32], SndPacket = new byte[32], nowjyoutai = new byte[18];
     private TextView State;
     static TextView Time, Tesuu;
     private Button Soroeru, Reset;
