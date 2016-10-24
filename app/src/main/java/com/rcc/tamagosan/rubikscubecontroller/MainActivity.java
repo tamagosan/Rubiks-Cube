@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
         Tesuu = (TextView) this.findViewById(R.id.tesuu);
         Soroeru = (Button) this.findViewById(R.id.soroeru);
         Reset = (Button) this.findViewById(R.id.reset);
-
         Cube = (MyView) this.findViewById(R.id.view1);
 
         RankingActivity rank = new RankingActivity();
