@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
                 case BluetoothClient.MESSAGE_READ:
                     State.setText("送受信処理中");
                     RcvPacket = (byte[]) msg.obj;
-                    Process();
+                    if(!barasu)Process();
                     break;
             }
         }
