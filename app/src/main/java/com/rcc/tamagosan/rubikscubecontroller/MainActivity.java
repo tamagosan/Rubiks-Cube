@@ -144,9 +144,12 @@ public class MainActivity extends AppCompatActivity {
                     if (animation) {
                         Time.setTextColor(Color.BLACK);
                         Time.setText("Now Shuffling");
+                        for (i = 0; i < 22; i++) {
+                            SndPacket[i] = 0x00;
+                        }
                         barasutimer = new Timer();
                         btimerTask = new barasuTimerTask();
-                        barasutimer.schedule(btimerTask, 0, 600);
+                        barasutimer.schedule(btimerTask, 0, 500);
                     } else {
                         shuffle = new Shuffle();
                         shuffle.rolling();
@@ -168,9 +171,6 @@ public class MainActivity extends AppCompatActivity {
                         } catch (InterruptedException e) {
                         }
                         BTclient.write(SndPacket);
-                        for (i = 0; i < 22; i++) {
-                            SndPacket[i] = 0x00;
-                        }
                         play = true;
                         barasu = false;
                     }
