@@ -443,8 +443,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume(){
         super.onResume();
-        if (cColorFlag) {
-            cColorFlag = false;
+        if (cColorFlag != cChange) {
+            cColorFlag = cChange;
             if (cChange) {
                 for (i = 0; i < 6; i++) {
                     for (j = 0; j < 3; j++) {
