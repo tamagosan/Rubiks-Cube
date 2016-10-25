@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
                     count++;
                     if (count == 20) {
                         try {
-                            Thread.sleep(600);
+                            Thread.sleep(700);
                         } catch (InterruptedException e) {
                         }
                         play = true;
@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
                 case BluetoothClient.MESSAGE_READ:
                     State.setText("送受信処理中");
                     RcvPacket = (byte[]) msg.obj;
-                    if(!barasu)Process();
+                    Process();
                     break;
             }
         }
