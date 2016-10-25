@@ -17,6 +17,7 @@ public class SettingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_setting);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         mRadioGroup1 = (RadioGroup) findViewById(R.id.RadioGroup1);
+        mact.cColorFlag = mact.cChange;
         if (mact.cChange) {
             mRadioGroup1.check(R.id.RadioButton12);
         } else {
@@ -24,7 +25,6 @@ public class SettingActivity extends AppCompatActivity {
         }
         mRadioGroup1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                mact.cColorFlag = true;
                 if (checkedId == R.id.RadioButton11) {
                     mact.cChange = false;
                 } else if (checkedId == R.id.RadioButton12) {
