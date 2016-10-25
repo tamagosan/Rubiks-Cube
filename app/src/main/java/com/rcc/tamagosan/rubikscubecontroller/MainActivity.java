@@ -164,10 +164,13 @@ public class MainActivity extends AppCompatActivity {
                         Time.setText("Ready");
                         Tesuu.setText("0");
                         try {
-                            Thread.sleep(100);
+                            Thread.sleep(70);
                         } catch (InterruptedException e) {
                         }
                         BTclient.write(SndPacket);
+                        for (i = 0; i < 22; i++) {
+                            SndPacket[i] = 0x00;
+                        }
                         play = true;
                         barasu = false;
                     }
@@ -204,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                     count++;
                     if (count == 20) {
                         try {
-                            Thread.sleep(700);
+                            Thread.sleep(650);
                         } catch (InterruptedException e) {
                         }
                         play = true;
