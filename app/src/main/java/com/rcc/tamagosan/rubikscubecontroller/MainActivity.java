@@ -27,23 +27,24 @@ public class MainActivity extends AppCompatActivity {
     public static final int ENABLEBLUETOOTH = 2;
     private BluetoothAdapter BTadapter;
     private BluetoothClient BTclient;
-    private byte[] RcvPacket = new byte[32], SndPacket = new byte[32], nowjyoutai = new byte[18];
+    private byte[] RcvPacket = new byte[32];
+    private byte[] SndPacket = new byte[32];
+    private byte[] nowjyoutai = new byte[18];
     private TextView State;
     static TextView Time, Tesuu;
     private Button Soroeru, Reset;
     private Timer barasutimer, counttimer;
-    static Timer timer;
     private barasuTimerTask btimerTask;
     private countTimerTask ctimerTask;
     private Handler thandler = new Handler(), bhandler = new Handler(), phandler = new Handler();
     private static MyView Cube;
-    private Shuffle shuffle;
     private boolean start = false, kotonaru = false, nidomehanai = false, play = false, barasu = false;
     public static boolean cColorFlag = false, cAnimationFlag = false, cChange, animation;
     public static int[][][] color = new int[6][3][3];
     public static int cc1, cc2;
     private int tesuucount = 0, i, j, k, clear;
     static long stcount;
+    private Shuffle shuffle;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -101,16 +102,6 @@ public class MainActivity extends AppCompatActivity {
                     } catch (InterruptedException e) {
                     }
                     barasu = false;
-                    timer = new Timer(true);
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            SndPacket[0] = 0x53;                // S
-                            SndPacket[1] = 0x42;                // B
-                            SndPacket[2] = 0x45;                // E
-                            BTclient.write(SndPacket);
-                        }
-                    }, 1000, 500);
                 }
                 play = false;
                 nidomehanai = false;
@@ -153,10 +144,6 @@ public class MainActivity extends AppCompatActivity {
                     if (animation) {
                         Time.setTextColor(Color.BLACK);
                         Time.setText("Now Shuffling");
-                        if (null != timer) {
-                            timer.cancel();
-                            timer = null;
-                        }
                         barasutimer = new Timer();
                         btimerTask = new barasuTimerTask();
                         barasutimer.schedule(btimerTask, 0, 600);
@@ -173,12 +160,14 @@ public class MainActivity extends AppCompatActivity {
                         }
                         SndPacket[21] = 0x45;                // E
                         BTclient.write(SndPacket);
-                        for (i = 0; i < 22; i++) {
-                            SndPacket[i] = 0;
-                        }
                         Time.setTextColor(Color.RED);
                         Time.setText("Ready");
                         Tesuu.setText("0");
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                        }
+                        BTclient.write(SndPacket);
                         play = true;
                         barasu = false;
                     }
@@ -211,24 +200,22 @@ public class MainActivity extends AppCompatActivity {
                     }
                     SndPacket[5] = 0x45;                // E
                     BTclient.write(SndPacket);
-                    count++;
                     Tesuu.setText(String.format("%d", 20 - count));
+                    count++;
                     if (count == 20) {
+                        try {
+                            Thread.sleep(600);
+                        } catch (InterruptedException e) {
+                        }
                         play = true;
                         barasutimer.cancel();
                         barasutimer = null;
                         Time.setTextColor(Color.RED);
                         Time.setText("Ready");
-                        timer = new Timer(true);
-                        timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                SndPacket[0] = 0x53;                // S
-                                SndPacket[1] = 0x42;                // B
-                                SndPacket[2] = 0x45;                // E
-                                BTclient.write(SndPacket);
-                            }
-                        }, 1000, 500);
+                        SndPacket[0] = 0x53;                // S
+                        SndPacket[1] = 0x42;                // B
+                        SndPacket[2] = 0x45;                // E
+                        BTclient.write(SndPacket);
                         barasu = false;
                     }
                 }
@@ -253,16 +240,6 @@ public class MainActivity extends AppCompatActivity {
                                 barasutimer.cancel();
                                 barasutimer = null;
                             }
-                            timer = new Timer(true);
-                            timer.schedule(new TimerTask() {
-                                @Override
-                                public void run() {
-                                    SndPacket[0] = 0x53;                // S
-                                    SndPacket[1] = 0x42;                // B
-                                    SndPacket[2] = 0x45;                // E
-                                    BTclient.write(SndPacket);
-                                }
-                            }, 1000, 500);
                             SndPacket[0] = 0x53;                // S
                             SndPacket[1] = 0x43;                // C
                             SndPacket[2] = 0x33;                // 3
@@ -296,62 +273,8 @@ public class MainActivity extends AppCompatActivity {
                 case BluetoothClient.MESSAGE_READ:
                     State.setText("送受信処理中");
                     RcvPacket = (byte[]) msg.obj;
-                    if (!barasu) Process();
+                    Process();
                     break;
-            }
-            if (cColorFlag) {
-                cColorFlag = false;
-                if (cChange) {
-                    for (i = 0; i < 6; i++) {
-                        for (j = 0; j < 3; j++) {
-                            for (k = 0; k < 3; k++) {
-                                if (color[i][j][k] == 0) {
-                                    color[i][j][k] = 2;
-                                } else if (color[i][j][k] == 2) {
-                                    color[i][j][k] = 4;
-                                } else if (color[i][j][k] == 4) {
-                                    color[i][j][k] = 0;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    for (i = 0; i < 6; i++) {
-                        for (j = 0; j < 3; j++) {
-                            for (k = 0; k < 3; k++) {
-                                if (color[i][j][k] == 0) {
-                                    color[i][j][k] = 4;
-                                } else if (color[i][j][k] == 2) {
-                                    color[i][j][k] = 0;
-                                } else if (color[i][j][k] == 4) {
-                                    color[i][j][k] = 2;
-                                }
-                            }
-                        }
-                    }
-                }
-                SndPacket[0] = 0x53;                // S
-                SndPacket[1] = 0x43;                // C
-                SndPacket[2] = 0x34;                // 4
-                for (i = 0; i < 6; i++) {
-                    for (j = 0; j < 3; j++) {
-                        SndPacket[i * 3 + j + 3] = (byte) (color[i][j][0] + color[i][j][1] * 6 + color[i][j][2] * 36);
-                    }
-                }
-                SndPacket[21] = 0x45;                // E
-                BTclient.write(SndPacket);
-
-                SharedPreferences pref = getSharedPreferences("color", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
-                SharedPreferences.Editor e = pref.edit();
-                e.putBoolean("tamagosan", cChange);
-                e.commit();
-            }
-            if (cAnimationFlag) {
-                cAnimationFlag = false;
-                SharedPreferences pref = getSharedPreferences("animation", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
-                SharedPreferences.Editor e = pref.edit();
-                e.putBoolean("tamagosan", animation);
-                e.commit();
             }
         }
     };
@@ -374,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
                     Cube.invalidate();
                 }
             });
-            if (play) {
+            if (play && !barasu) {
                 for (i = 0; i < 18; i++) {
                     if (!nidomehanai) nowjyoutai[i] = RcvPacket[i + 2];
                     if (RcvPacket[i + 2] != nowjyoutai[i]) {
@@ -397,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
                         counttimer.schedule(ctimerTask, 0, 10);
                     }
                     tesuucount++;
-                    Tesuu.setText(String.format("%d", tesuucount));
+                    Tesuu.setText(String.format("%d", (int)(tesuucount/3)));
                     clear = 0;
                     for (i = 0; i < 6; i++) {
                         if (color[i][0][0] == color[i][0][1] && color[i][0][1] == color[i][0][2] && color[i][0][2] == color[i][1][0] && color[i][1][0] == color[i][1][1] && color[i][1][1] == color[i][1][2] && color[i][1][2] == color[i][2][0] && color[i][2][0] == color[i][2][1] && color[i][2][1] == color[i][2][2]) {
@@ -419,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
                         BTclient.write(SndPacket);
 
                         RankingActivity rank = new RankingActivity();
-
+                        tesuucount=tesuucount/3;
                         rankin = false;
                         for (j = 0; j < 5; j++) {
                             if (stcount <= rank.score[0][j]) {
@@ -513,6 +436,66 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        if (cColorFlag) {
+            cColorFlag = false;
+            if (cChange) {
+                for (i = 0; i < 6; i++) {
+                    for (j = 0; j < 3; j++) {
+                        for (k = 0; k < 3; k++) {
+                            if (color[i][j][k] == 0) {
+                                color[i][j][k] = 2;
+                            } else if (color[i][j][k] == 2) {
+                                color[i][j][k] = 4;
+                            } else if (color[i][j][k] == 4) {
+                                color[i][j][k] = 0;
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (i = 0; i < 6; i++) {
+                    for (j = 0; j < 3; j++) {
+                        for (k = 0; k < 3; k++) {
+                            if (color[i][j][k] == 0) {
+                                color[i][j][k] = 4;
+                            } else if (color[i][j][k] == 2) {
+                                color[i][j][k] = 0;
+                            } else if (color[i][j][k] == 4) {
+                                color[i][j][k] = 2;
+                            }
+                        }
+                    }
+                }
+            }
+            SndPacket[0] = 0x53;                // S
+            SndPacket[1] = 0x43;                // C
+            SndPacket[2] = 0x34;                // 4
+            for (i = 0; i < 6; i++) {
+                for (j = 0; j < 3; j++) {
+                    SndPacket[i * 3 + j + 3] = (byte) (color[i][j][0] + color[i][j][1] * 6 + color[i][j][2] * 36);
+                }
+            }
+            SndPacket[21] = 0x45;                // E
+            BTclient.write(SndPacket);
+
+            SharedPreferences pref = getSharedPreferences("color", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+            SharedPreferences.Editor e = pref.edit();
+            e.putBoolean("tamagosan", cChange);
+            e.commit();
+        }
+        if (cAnimationFlag) {
+            cAnimationFlag = false;
+            SharedPreferences pref = getSharedPreferences("animation", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+            SharedPreferences.Editor e = pref.edit();
+            e.putBoolean("tamagosan", animation);
+            e.commit();
+        }
+    }
+
 
     @Override
     public void onStart() {
