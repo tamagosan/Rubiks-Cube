@@ -205,14 +205,14 @@ public class MainActivity extends AppCompatActivity {
                     BTclient.write(SndPacket);
                     Tesuu.setText(String.format("%d", 20 - count));
                     count++;
-                    if (count == 20) {
+                    if (count == 21) {
+                        barasutimer.cancel();
+                        barasutimer = null;
                         try {
-                            Thread.sleep(650);
+                            Thread.sleep(700);
                         } catch (InterruptedException e) {
                         }
                         play = true;
-                        barasutimer.cancel();
-                        barasutimer = null;
                         Time.setTextColor(Color.RED);
                         Time.setText("Ready");
                         SndPacket[0] = 0x53;                // S
