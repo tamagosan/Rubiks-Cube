@@ -9,44 +9,33 @@ import android.widget.RadioGroup;
 
 public class SettingActivity extends AppCompatActivity {
     private RadioGroup mRadioGroup1, mRadioGroup2;
-    MainActivity mact = new MainActivity();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        MainActivity mact = new MainActivity();
+        
         mRadioGroup1 = (RadioGroup) findViewById(R.id.RadioGroup1);
         mact.cColorFlag = mact.cChange;
-        if (mact.cChange) {
-            mRadioGroup1.check(R.id.RadioButton12);
-        } else {
-            mRadioGroup1.check(R.id.RadioButton11);
-        }
+        if (mact.cChange) mRadioGroup1.check(R.id.RadioButton12);
+        else mRadioGroup1.check(R.id.RadioButton11);
         mRadioGroup1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R.id.RadioButton11) {
-                    mact.cChange = false;
-                } else if (checkedId == R.id.RadioButton12) {
-                    mact.cChange = true;
-                }
+                if (checkedId == R.id.RadioButton11) mact.cChange = false;
+                else if (checkedId == R.id.RadioButton12) mact.cChange = true;
             }
         });
 
         mRadioGroup2 = (RadioGroup) findViewById(R.id.RadioGroup2);
-        if (mact.animation) {
-            mRadioGroup2.check(R.id.RadioButton21);
-        } else {
-            mRadioGroup2.check(R.id.RadioButton22);
-        }
+        if (mact.animation) mRadioGroup2.check(R.id.RadioButton21);
+        else mRadioGroup2.check(R.id.RadioButton22);
         mRadioGroup2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 mact.cAnimationFlag = true;
-                if (checkedId == R.id.RadioButton21) {
-                    mact.animation = true;
-                } else if (checkedId == R.id.RadioButton22) {
-                    mact.animation = false;
-                }
+                if (checkedId == R.id.RadioButton21) mact.animation = true;
+                else if (checkedId == R.id.RadioButton22) mact.animation = false;
             }
         });
 
